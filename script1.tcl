@@ -15,21 +15,24 @@ set ns [new Simulator]
 
 #Open the nam trace file
 #ouvre une file utilisee pour l'animation
-set nf [open out_exo5.nam w]
-set tf [open out_exo5.tr w]
+set nf [open out_script1.nam w]
+set tf [open trace_script1.tr w]
 $ns namtrace-all $nf
 $ns trace-all $tf
+#ouvre un fichier pour stocker une fenetre de congestion TCP  
+set cwnd_data [open cwnd_tcp0.tr w]
 
 #Define a 'finish' procedure
 #a la fin de la simu, lancer l'animation
 proc finish {} {
-        global ns nf
+        global ns nf tf cwnd_data
         $ns flush-trace
 	#Close the trace file
         close $nf
         close $tf
+        close $cwnd_data
 	#Execute nam on the trace file
-        exec nam out_exo5.nam &
+        exec nam out_script1.nam &
         exit 0
 }
 
@@ -146,6 +149,22 @@ $ns cost $r(3) $r(5) 10
 $ns cost $r(5) $r(3) 10
 $ns duplex-link-op $r(3) $r(5) orient right-up
 
+$ns queue-limit $r(0) $r(1) 5
+$ns queue-limit $r(2) $r(0) 5
+$ns queue-limit $r(1) $r(2) 5
+$ns queue-limit $r(1) $r(3) 5
+$ns queue-limit $r(1) $r(6) 5
+$ns queue-limit $r(1) $r(7) 5
+$ns queue-limit $r(2) $r(3) 5
+$ns queue-limit $r(4) $r(2) 5
+$ns queue-limit $r(3) $r(4) 5
+$ns queue-limit $r(3) $r(5) 5
+$ns queue-limit $r(3) $r(6) 5
+$ns queue-limit $r(5) $r(4) 5
+$ns queue-limit $r(5) $r(6) 5
+$ns queue-limit $r(6) $r(7) 5
+
+$ns duplex-link-op $r(4) $r(2) queuePos -0.25
 #routage protocol OSPF
 $ns rtproto Session
 
@@ -158,14 +177,17 @@ $ns attach-agent $r(0) $sink_tcp0
 set tcp0 [new Agent/TCP/Reno]
 
 # caracteristics of agent tcp0
-$tcp0 set class_ 1
-$tcp0 set window_ 50
+#$tcp0 set class_ 1
+$tcp0 set window_ 16
 $tcp0 set packetSize_ 1000
 $ns attach-agent $r(5) $tcp0
 
 
 set ftp0 [new Application/FTP]
 $ftp0 attach-agent $tcp0
+
+$tcp0 attach $cwnd_data
+$tcp0 trace cwnd_
 
 $ns connect $tcp0 $sink_tcp0
 
