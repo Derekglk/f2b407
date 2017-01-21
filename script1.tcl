@@ -149,22 +149,14 @@ $ns cost $r(3) $r(5) 10
 $ns cost $r(5) $r(3) 10
 $ns duplex-link-op $r(3) $r(5) orient right-up
 
-$ns queue-limit $r(0) $r(1) 5
+
 $ns queue-limit $r(2) $r(0) 5
-$ns queue-limit $r(1) $r(2) 5
-$ns queue-limit $r(1) $r(3) 5
-$ns queue-limit $r(1) $r(6) 5
-$ns queue-limit $r(1) $r(7) 5
-$ns queue-limit $r(2) $r(3) 5
 $ns queue-limit $r(4) $r(2) 5
-$ns queue-limit $r(3) $r(4) 5
-$ns queue-limit $r(3) $r(5) 5
-$ns queue-limit $r(3) $r(6) 5
 $ns queue-limit $r(5) $r(4) 5
-$ns queue-limit $r(5) $r(6) 5
-$ns queue-limit $r(6) $r(7) 5
+
 
 $ns duplex-link-op $r(4) $r(2) queuePos -0.25
+
 #routage protocol OSPF
 $ns rtproto Session
 
@@ -177,8 +169,7 @@ $ns attach-agent $r(0) $sink_tcp0
 set tcp0 [new Agent/TCP/Reno]
 
 # caracteristics of agent tcp0
-#$tcp0 set class_ 1
-$tcp0 set window_ 16
+$tcp0 set window_ 17
 $tcp0 set packetSize_ 1000
 $ns attach-agent $r(5) $tcp0
 
@@ -191,32 +182,7 @@ $tcp0 trace cwnd_
 
 $ns connect $tcp0 $sink_tcp0
 
-#for {set i 1} {$i < 8} {incr i} {
-#set udp($i) [new Agent/UDP]
-#}
-
-#for {set i 1} {$i < 8} {incr i} {
-#$udp($i) set fid_ $i
-#$ns attach-agent $r($i) $udp($i)
-#$ns connect $udp($i) $sink0
-#}
-
-#for {set i 1} {$i < 8} {incr i} {
-#set cbr($i) [new Application/Traffic/CBR]
-#$cbr($i) attach-agent $udp($i)
-#$cbr($i) set rate_ 0.50Mb
-#$cbr($i) set packetSize_ 1000
-#$cbr($i) set type_ CBR
-#}
-
-#Schedule events for the cbr agents
-#for {set i 1} {$i < 8} {incr i} {
-#$ns at 1.0 "$cbr($i) start"
-#$ns at 10.0 "$cbr($i) stop"
-#}
 $ns at 0.0 "$ftp0 start"
-#$ns at 1.0 "$cbr(5) start"
-
 
 #Call the finish procedure 
 $ns at 60.0 "finish"
