@@ -4,8 +4,8 @@
 set ns [new Simulator]
 
 #Define different colors for data flows
-$ns color 1 Red
-$ns color 2 Blue
+#$ns color 1 Red
+#$ns color 2 Blue
 #$ns color 3 Green
 #$ns color 4 Yellow
 #$ns color 5 Orange
@@ -67,8 +67,8 @@ $ns duplex-link-op $r(1) $r(7) orient right
 
 #=======================4==5=======================
 $ns duplex-link $r(4) $r(5) 3.0Mb 13ms DropTail
-$ns cost $r(4) $r(5) 1
-$ns cost $r(5) $r(4) 1
+$ns cost $r(4) $r(5) 9
+$ns cost $r(5) $r(4) 9
 $ns duplex-link-op $r(4) $r(5) orient right
 
 
@@ -95,8 +95,8 @@ $ns duplex-link-op $r(7) $r(6) orient left-up
 
 #=======================3==4=======================
 $ns duplex-link $r(3) $r(4) 2.75Mb 15ms DropTail
-$ns cost $r(3) $r(4) 1
-$ns cost $r(4) $r(3) 1
+$ns cost $r(3) $r(4) 11
+$ns cost $r(4) $r(3) 11
 $ns duplex-link-op $r(3) $r(4) orient left-up
 
 
@@ -116,15 +116,15 @@ $ns duplex-link-op $r(6) $r(5) orient up
 
 #=======================1==2=======================
 $ns duplex-link $r(1) $r(2) 2.25Mb 14ms DropTail
-$ns cost $r(1) $r(2) 1
-$ns cost $r(2) $r(1) 1
+$ns cost $r(1) $r(2) 4
+$ns cost $r(2) $r(1) 4
 $ns duplex-link-op $r(1) $r(2) orient left-up
 
 
 #=======================3==6=======================
 $ns duplex-link $r(3) $r(6) 2.0Mb 12ms DropTail
-$ns cost $r(3) $r(6) 1
-$ns cost $r(6) $r(3) 1
+$ns cost $r(3) $r(6) 3
+$ns cost $r(6) $r(3) 3
 $ns duplex-link-op $r(6) $r(3) orient left-up
 
 
@@ -138,8 +138,8 @@ $ns duplex-link-op $r(1) $r(6) orient right-up
 
 #=======================2==3=======================
 $ns duplex-link $r(2) $r(3) 2.5Mb 9ms DropTail
-$ns cost $r(2) $r(3) 1
-$ns cost $r(3) $r(2) 1
+$ns cost $r(2) $r(3) 13
+$ns cost $r(3) $r(2) 13
 $ns duplex-link-op $r(2) $r(3) orient right-up
 
 
@@ -151,68 +151,63 @@ $ns duplex-link-op $r(3) $r(5) orient right-up
 
 
 $ns queue-limit $r(2) $r(0) 5
-$ns queue-limit $r(4) $r(3) 5
-$ns queue-limit $r(3) $r(2) 5
 $ns queue-limit $r(4) $r(2) 5
+$ns queue-limit $r(5) $r(4) 5
 
-$ns duplex-link-op $r(4) $r(3) queuePos -0.25
-$ns duplex-link-op $r(3) $r(2) queuePos -0.25
+
 $ns duplex-link-op $r(4) $r(2) queuePos -0.25
 
 #routage protocol OSPF
 $ns rtproto Session
 
 
-# create  a sink agent  and attach it to node r0
+# create  a sink agent  and attach it to node 
 set sink_tcp0 [new Agent/TCPSink]
 $ns attach-agent $r(0) $sink_tcp0
 
 # create a TCP agent and attach it to node r5
 set tcp0 [new Agent/TCP/Reno]
-$tcp0 set fid_ 1
 
 # caracteristics of agent tcp0
-$tcp0 set window_ 37
+$tcp0 set window_ 17
 $tcp0 set packetSize_ 1000
-$tcp0 set class_ 1
 $ns attach-agent $r(5) $tcp0
 
-# create FTP application
+
 set ftp0 [new Application/FTP]
 $ftp0 attach-agent $tcp0
-
-# create a sink agent UDP and attach it to node r1
-set null0 [new Agent/Null]
-$ns attach-agent $r(1) $null0
-
-# create a UDP agent and attach it to node r6
-set udp0 [new Agent/UDP]
-$ns attach-agent $r(6) $udp0
-$udp0 set class_ 2
-$udp0 set fid_ 2
-
-# create CBR application
-set cbr0 [new Application/Traffic/CBR]
-$cbr0 attach-agent $udp0
-$cbr0 set rate_ 1.75Mb
-$cbr0 set packetSize_ 1000
-$cbr0 set type_ CBR
 
 $tcp0 attach $cwnd_data
 $tcp0 trace cwnd_
 
 $ns connect $tcp0 $sink_tcp0
-$ns connect $udp0 $null0
 
+#for {set i 1} {$i < 8} {incr i} {
+#set udp($i) [new Agent/UDP]
+#}
+
+#for {set i 1} {$i < 8} {incr i} {
+#$udp($i) set fid_ $i
+#$ns attach-agent $r($i) $udp($i)
+#$ns connect $udp($i) $sink0
+#}
+
+#for {set i 1} {$i < 8} {incr i} {
+#set cbr($i) [new Application/Traffic/CBR]
+#$cbr($i) attach-agent $udp($i)
+#$cbr($i) set rate_ 0.50Mb
+#$cbr($i) set packetSize_ 1000
+#$cbr($i) set type_ CBR
+#}
+
+#Schedule events for the cbr agents
+#for {set i 1} {$i < 8} {incr i} {
+#$ns at 1.0 "$cbr($i) start"
+#$ns at 10.0 "$cbr($i) stop"
+#}
 $ns at 0.0 "$ftp0 start"
-$ns at 60.0 "$ftp0 stop"
+#$ns at 1.0 "$cbr(5) start"
 
-$ns at 30.0 "$cbr0 start"
-$ns at 60.0 "$cbr0 stop"
-
-#Schedule events for link failure
-$ns rtmodel-at 25.0 down $r(3) $r(4)
-$ns rtmodel-at 45.0 up $r(3) $r(4)
 
 #Call the finish procedure 
 $ns at 60.0 "finish"

@@ -21,16 +21,18 @@ $ns namtrace-all $nf
 $ns trace-all $tf
 #ouvre un fichier pour stocker une fenetre de congestion TCP  
 set cwnd_data [open cwnd_tcp0.tr w]
+set cwnd_data2 [open cwnd_tcp2.tr w]
 
 #Define a 'finish' procedure
 #a la fin de la simu, lancer l'animation
 proc finish {} {
-        global ns nf tf cwnd_data
+        global ns nf tf cwnd_data cwnd_data2
         $ns flush-trace
 	#Close the trace file
         close $nf
         close $tf
         close $cwnd_data
+        close $cwnd_data2
 	#Execute nam on the trace file
         exec nam out_script1.nam &
         exit 0
@@ -181,41 +183,43 @@ $ns attach-agent $r(5) $tcp0
 set ftp0 [new Application/FTP]
 $ftp0 attach-agent $tcp0
 
-# create a sink agent UDP and attach it to node r1
-set null0 [new Agent/Null]
-$ns attach-agent $r(1) $null0
+set sink_tcp2 [new Agent/TCPSink]
+$ns attach-agent $r(1) $sink_tcp2
 
-# create a UDP agent and attach it to node r6
-set udp0 [new Agent/UDP]
-$ns attach-agent $r(6) $udp0
-$udp0 set class_ 2
-$udp0 set fid_ 2
+set tcp2 [new Agent/TCP/Reno]
+$tcp2 set fid_ 2
+$tcp2 set packetSize_ 1000
+$tcp2 set class_ 2
+$ns attach-agent $r(6) $tcp2
+
 
 # create CBR application
 set cbr0 [new Application/Traffic/CBR]
-$cbr0 attach-agent $udp0
+$cbr0 attach-agent $tcp2
 $cbr0 set rate_ 1.75Mb
 $cbr0 set packetSize_ 1000
 $cbr0 set type_ CBR
 
 $tcp0 attach $cwnd_data
 $tcp0 trace cwnd_
+$tcp2 attach $cwnd_data2
+$tcp2 trace cwnd_
 
 $ns connect $tcp0 $sink_tcp0
-$ns connect $udp0 $null0
+$ns connect $tcp2 $sink_tcp2
 
 $ns at 0.0 "$ftp0 start"
-$ns at 60.0 "$ftp0 stop"
+$ns at 100.0 "$ftp0 stop"
 
 $ns at 30.0 "$cbr0 start"
-$ns at 60.0 "$cbr0 stop"
+$ns at 100.0 "$cbr0 stop"
 
 #Schedule events for link failure
 $ns rtmodel-at 25.0 down $r(3) $r(4)
 $ns rtmodel-at 45.0 up $r(3) $r(4)
 
 #Call the finish procedure 
-$ns at 60.0 "finish"
+$ns at 100.0 "finish"
 
 #Run the simulation
 $ns run

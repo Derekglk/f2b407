@@ -137,7 +137,7 @@ $ns duplex-link-op $r(1) $r(6) orient right-up
 
 
 #=======================2==3=======================
-$ns duplex-link $r(2) $r(3) 2.5Mb 9ms DropTail
+$ns duplex-link $r(2) $r(3) 2.5Mb 9ms SFQ
 $ns cost $r(2) $r(3) 1
 $ns cost $r(3) $r(2) 1
 $ns duplex-link-op $r(2) $r(3) orient right-up
